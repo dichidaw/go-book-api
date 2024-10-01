@@ -9,6 +9,7 @@ import (
 	"go-book-api/repositories"
 	"go-book-api/routes"
 	"go-book-api/services"
+	"gorm.io/gorm"
 	"os"
 )
 
@@ -21,8 +22,20 @@ func main() {
 
 	dbConnection := handlers.ConnectDB()
 	defer handlers.CloseDBConn(dbConnection)
+	handler := initHandler(dbConnection)
 
-	// init handler
+	app := fiber.New()
+	routes.Routes(app, handler)
+
+	appPort := os.Getenv("APP_PORT")
+	err = app.Listen(fmt.Sprintf(":%s", appPort))
+	if err != nil {
+		log.Fatal("Failed to listen on port ", err)
+		return
+	}
+}
+
+func initHandler(dbConnection *gorm.DB) *handlers.RequestHandler {
 	bookRepo := repositories.NewBookRepository(dbConnection)
 	bookService := services.NewBookService(bookRepo)
 
@@ -32,15 +45,5 @@ func main() {
 	borrowingRepo := repositories.NewBorrowingRepository(dbConnection)
 	borrowingService := services.NewBorrowingService(borrowingRepo)
 
-	bookHandler := handlers.NewHandler(bookService, userService, borrowingService)
-
-	app := fiber.New()
-	routes.Routes(app, bookHandler)
-
-	appPort := os.Getenv("APP_PORT")
-	err = app.Listen(fmt.Sprintf(":%s", appPort))
-	if err != nil {
-		log.Fatal("Failed to listen on port ", err)
-		return
-	}
+	return handlers.NewHandler(bookService, userService, borrowingService)
 }
