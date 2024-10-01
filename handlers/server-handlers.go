@@ -3,30 +3,46 @@ package handlers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	s "go-book-api/services"
 )
 
-func ReadBooks(c *fiber.Ctx) error {
-	err := c.SendString("'Hi', Fiber said")
-	if err != nil {
-		log.Fatal("Error in ReadBooks: ", err)
-		return err
-	}
-	return nil
+type RequestHandler struct {
+	bookService      s.BookService
+	userService      s.UserService
+	borrowingService s.BorrowingService
 }
 
-//
-//func ReadBooksByID(c *fiber.Ctx) error {
-//
-//}
-//
-//func AddBooks(c *fiber.Ctx) error {
-//
-//}
-//
-//func UpdateBookByID(c *fiber.Ctx) error {
-//
-//}
-//
-//func DeleteBookByID(c *fiber.Ctx) error {
-//
-//}
+func NewHandler(bookService s.BookService, userService s.UserService, borrowingService s.BorrowingService) *RequestHandler {
+	return &RequestHandler{
+		bookService:      bookService,
+		userService:      userService,
+		borrowingService: borrowingService,
+	}
+}
+
+func (h *RequestHandler) ReadBooks(c *fiber.Ctx) error {
+	books, err := h.bookService.GetAllBooks()
+	if err != nil {
+		log.Error("Error fetching books: ", err)
+		return c.Status(500).SendString("Internal Server Error")
+	}
+	return c.JSON(books)
+}
+
+func (h *RequestHandler) ReadUsers(c *fiber.Ctx) error {
+	users, err := h.userService.GetAllUsers()
+	if err != nil {
+		log.Error("Error fetching users: ", err)
+		return c.Status(500).SendString("Internal Server Error")
+	}
+	return c.JSON(users)
+}
+
+func (h *RequestHandler) ReadBorrowingHistories(c *fiber.Ctx) error {
+	borrowingHistories, err := h.borrowingService.GetBorrowingHistories()
+	if err != nil {
+		log.Error("Error fetching users: ", err)
+		return c.Status(500).SendString("Internal Server Error")
+	}
+	return c.JSON(borrowingHistories)
+}

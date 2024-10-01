@@ -5,10 +5,13 @@ import (
 	"go-book-api/handlers"
 )
 
-func Routes(app *fiber.App) {
-	app.Get("/", handlers.ReadBooks)
-	//app.Get("/:id", handlers.ReadBooksByID)
-	//app.Post("/", handlers.AddBooks)
-	//app.Patch("/:id", handlers.UpdateBookByID)
-	//app.Delete("/:id", handlers.DeleteBookByID)
+func Routes(app *fiber.App, handler *handlers.RequestHandler) {
+	books := app.Group("/books")
+	books.Get("/", handler.ReadBooks)
+
+	users := app.Group("/users")
+	users.Get("/", handler.ReadUsers)
+
+	borrowingHistories := app.Group("/borrowingHistories")
+	borrowingHistories.Get("/", handler.ReadBorrowingHistories)
 }

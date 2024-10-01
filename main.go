@@ -6,7 +6,9 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/joho/godotenv"
 	"go-book-api/handlers"
+	"go-book-api/repositories"
 	"go-book-api/routes"
+	"go-book-api/services"
 	"os"
 )
 
@@ -20,8 +22,20 @@ func main() {
 	dbConnection := handlers.ConnectDB()
 	defer handlers.CloseDBConn(dbConnection)
 
+	// init handler
+	bookRepo := repositories.NewBookRepository(dbConnection)
+	bookService := services.NewBookService(bookRepo)
+
+	userRepo := repositories.NewUserRepository(dbConnection)
+	userService := services.NewUserService(userRepo)
+
+	borrowingRepo := repositories.NewBorrowingRepository(dbConnection)
+	borrowingService := services.NewBorrowingService(borrowingRepo)
+
+	bookHandler := handlers.NewHandler(bookService, userService, borrowingService)
+
 	app := fiber.New()
-	routes.Routes(app)
+	routes.Routes(app, bookHandler)
 
 	appPort := os.Getenv("APP_PORT")
 	err = app.Listen(fmt.Sprintf(":%s", appPort))

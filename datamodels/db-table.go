@@ -12,7 +12,7 @@ type Book struct {
 	ID         uint        `gorm:"primaryKey"`
 	Title      string      `json:"title"`
 	IsBorrowed bool        `json:"isBorrowed"`
-	Borrows    []Borrowing `json:"borrows" gorm:"foreignKey:BookID"`
+	BorrowedBy []Borrowing `json:"borrowedBy" gorm:"foreignKey:BookID"`
 	Writers    []Writer    `json:"writers" gorm:"many2many:book_writers;foreignKey:ID;joinForeignKey:BookID;References:ID;joinReferences:WriterID"`
 }
 
